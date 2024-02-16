@@ -1,5 +1,5 @@
-text = 'mrttaqrhknsw ih puggrur'
-custom_key = 'peteratspidey'
+text = input('pls enter text:-')
+custom_key = input('pls enter key:-')
 
 def vigenere(message, key, direction=1):
     key_index = 0
