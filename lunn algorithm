@@ -1,30 +1,131 @@
-def verify_card_number(card_number):
-    sum_of_odd_digits = 0
-    card_number_reversed = card_number[::-1]
-    odd_digits = card_number_reversed[::2]
+#opening a file with given path for read purpose and read it line by line
+x= open ("/home/spidey/Downloads/1ltx.pdb", "r" ).readlines()
 
-    for digit in odd_digits:
-        sum_of_odd_digits += int(digit)
+#ATOM     15  CG  LEU A  25      60.022  46.418  47.611  1.00 69.97           C
 
-    sum_of_even_digits = 0
-    even_digits = card_number_reversed[1::2]
-    for digit in even_digits:
-        number = int(digit) * 2
-        if number >= 10:
-            number = (number // 10) + (number % 10)
-        sum_of_even_digits += number
-    total = sum_of_odd_digits + sum_of_even_digits
-    print(total)
-    return total % 10 == 0
+#creating a output file for write purpose
+outfile = open("outputfile.txt", "w")
 
-def main():
-    card_number = input('enter card number to check:-')
-    card_translation = str.maketrans({'-': '', ' ': ''})
-    translated_card_number = card_number.translate(card_translation)
+# a loop to extract the lines starts with ATOM
+for i in range(len(x)):
+	line = x[i].strip() #striping for new line charachter repeatation
+	if (line[:2] == "AT"):
+		outfile.write(line+ "\n") #writing in output file after removal of additional new line charachter
+#close the file
+outfile.close()
 
-    if verify_card_number(translated_card_number):
-        print('VALID!')
-    else:
-        print('INVALID!')
+# open the extracted file only for read purpose and read it line by line
+y= open ("/home/spidey/outputfile.txt", "r").readlines()
 
-main()
+#initialise the count of atoms as zero
+count_of_C = 0 
+count_of_S = 0 
+count_of_O = 0 
+count_of_N = 0 
+
+# initialise the mass of atoms as zero
+mass_of_N = 0
+mass_of_S = 0
+mass_of_C = 0
+mass_of_O = 0
+
+# starting a loop till range i.e. length of the file lines
+for i in range(len(y)):
+	line = y[i].strip()
+	if line [77] == "C": #checking if line 77 contains C
+		count_of_C +=1 #then add count to count_of_C
+		mass_of_C = mass_of_C + 12 #add mass_of_C
+	elif line [77] == "O": #checking if line 77 contains O
+		count_of_O +=1 #then add count to count_of_O
+		mass_of_O = mass_of_O + 16 #add mass_of_O
+	elif line [77] == "S": #checking if line 77 contains S
+		count_of_S +=1 #then add count to count_of_S
+		mass_of_S = mass_of_S + 32 #add mass_of_S
+	elif line [77] == "N": #checking if line 77 contains N
+		count_of_N +=1 #then add count to count_of_N
+		mass_of_N = mass_of_N + 14 #add mass_of_N
+	else :
+		continue		
+#calculate total no of atoms
+total_no_of_atoms = count_of_C + count_of_O + count_of_S + count_of_N
+
+#calculate total mass of protein
+mass_of_protein = mass_of_N + mass_of_S + mass_of_C + mass_of_O
+
+#print the counts
+print(f" C: {count_of_C} ,\n O :{count_of_O},\n S: {count_of_S},\n N: {count_of_N}")
+
+#print the total atoms and total mass
+print (f" total atoms and total no of amino acids: {total_no_of_atoms},\n mass:{mass_of_protein} Da")	
+
+
+# give the radius values by self		
+radius_of_C = 1.70  # Carbon
+radius_of_S = 1.80  # Sulfur
+radius_of_O = 1.52  # Oxygen
+radius_of_N = 1.55  # Nitrogen
+
+#calculate volume of each atom by simple formula (4/3*pi*r³)
+volume_of_C = (4/3 * 22/7 * radius_of_C**3) * count_of_C
+volume_of_S = (4/3 * 22/7 * radius_of_S**3) * count_of_S
+volume_of_O = (4/3 * 22/7 * radius_of_O**3) * count_of_O
+volume_of_N = (4/3 * 22/7 * radius_of_N**3) * count_of_N
+
+
+#print the volume of CSNO 
+print(f"vol_C: {volume_of_C} Å,\n vol_O: {volume_of_O} Å,\n vol_S: {volume_of_S} Å,\n vol_N: {volume_of_N} Å")
+
+#calculate total volume
+total_volume  = (volume_of_C + volume_of_O + volume_of_S + volume_of_N )
+
+#print total volume
+print (f" total_vol:{total_volume} Å") 
+
+charge_on_protein = 0
+for i in range(len(y)):
+	line = y[i].strip()
+	if line [17:20] == "LYS" :
+		charge_on_protein +=1
+	elif line [17:20] == "ARG" :
+		charge_on_protein +=1
+	elif line [17:20] == "ASP":
+		charge_on_protein -=1
+	elif line [17:20] == "GLU":
+		charge_on_protein -=1
+	elif line[17:20] == "HIS": #histidine as taken 0.2 because its charge depend on the ph of the protein crystal i.e. 7.2 in case of 1ltx.pdb (+1 for ph<6 , 0.1 or 0.2 for ph ~ 7.0 ,0 for ph > 6 )
+		charge_on_protein +=0.2
+
+print(f"total charge on protein : {charge_on_protein}")
+
+# calculate water molecule and total count of amino acids
+water= 0
+for i in range(len(x)):
+	line = x[i].strip()
+	if line[17:20] == "HOH": #accessing lines with HOH starting and counting
+		water +=1 
+
+print(f"water : {water}")	
+
+#calculate the centroid
+cent_X =0
+cent_Y = 0
+cent_Z = 0
+
+for i in range(len(y)):
+	line = y[i].strip()
+	if ((line[21] == "A") | (line[21] =="B")): #select line with A and B chains
+		cent_X = cent_X + float(line[32:39])
+		cent_Y = cent_Y + float(line[40:47])
+		cent_Z = cent_Z + float(line[48:55])
+print(f" cent_X : {cent_X/total_no_of_atoms} ,\n cent_Y : {cent_Y/total_no_of_atoms}, \n cent_Z : {cent_Z/total_no_of_atoms} ")
+
+amino_acids =set()
+for i in range(len(y)):
+    line = y[i].strip()
+    amino_acid_name = line[17:20]
+    amino_acid_no = line[22:26]
+    amino_details = (f" amino acids : {amino_acid_no} - {amino_acid_name}")
+    amino_acids.add(amino_details)
+
+for i in sorted(amino_acids):
+    print(i)
